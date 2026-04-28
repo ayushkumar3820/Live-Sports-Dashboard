@@ -6,10 +6,8 @@ import { desc } from "drizzle-orm";
 
 export const matchesRouter = Router();
 
-// ✅ Define max limit
 const MAX_LIMIT = 100;
 
-// ✅ Helper function (if not already defined)
 const getMatchStatus = (start, end) => {
   const now = new Date();
   if (now < new Date(start)) return "upcoming";
@@ -17,8 +15,6 @@ const getMatchStatus = (start, end) => {
   return "live";
 };
 
-
-// ================= GET MATCHES =================
 matchesRouter.get("/", async (req, res) => {
   const parsed = listMatchesSchema.safeParse(req.query);
 
@@ -48,8 +44,6 @@ matchesRouter.get("/", async (req, res) => {
   }
 });
 
-
-// ================= CREATE MATCH =================
 matchesRouter.post("/", async (req, res) => {
   const parsed = createMatchSchema.safeParse(req.body);
 
@@ -73,6 +67,10 @@ matchesRouter.post("/", async (req, res) => {
         status: getMatchStatus(data.startTime, data.endTime),
       })
       .returning();
+
+    if (req.app.locals.broadcastMatchCreated) {
+      req.app.locals.broadcastMatchCreated(event);
+    }
 
     return res.status(201).json({
       message: "Match created successfully",

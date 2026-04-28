@@ -1,21 +1,44 @@
-import express from 'express';
-import cors from 'cors';
-import { matchesRouter } from './router/Matchs.js';
+// ================= IMPORTS =================
+import express from "express";
+import cors from "cors";
+import http from "http";
+import "dotenv/config";
 
+import { matchesRouter } from "./router/Matchs.js";
+import { attachWebSocketServer } from "./ws/server.js";
 
+// ================= APP SETUP =================
 const app = express();
-const PORT = 3000;
 
+// Env values
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
+
+// Create HTTP server for both Express + WebSocket
+const server = http.createServer(app);
+
+// ================= MIDDLEWARE =================
 app.use(cors());
 app.use(express.json());
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+
+// ================= ROUTES =================
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
 
+app.use("/matches", matchesRouter);
 
-app.use("/matches",matchesRouter);
+// ================= WEBSOCKET SETUP =================
+const { broadcastMatchCreated, broadcastMatchUpdated } = attachWebSocketServer(server);
 
+app.locals.broadcastMatchCreated = broadcastMatchCreated;
+app.locals.broadcastMatchUpdated = broadcastMatchUpdated;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// ================= START SERVER =================
+server.listen(PORT, HOST, () => {
+  const baseUrl =
+    HOST === "0.0.0.0" ? `http://localhost:${PORT}` : `http://${HOST}:${PORT}`;
+
+  console.log(`🚀 Server running at ${baseUrl}`);
+  console.log(`📡 WebSocket running at ws://localhost:${PORT}/ws`);
 });
