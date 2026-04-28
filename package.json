@@ -11,7 +11,6 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "demo": "node src/crud-demo.js"
-    
   },
   "keywords": [],
   "author": "",
@@ -25,7 +24,9 @@
     "express": "^5.2.1",
     "nodemon": "^3.1.14",
     "pg": "^8.20.0",
-    "ws": "^8.20.0"
+    "postgres": "^3.4.9",
+    "ws": "^8.20.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10"
