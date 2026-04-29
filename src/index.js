@@ -8,6 +8,7 @@ dotenv.config();
 import { matchesRouter } from "./router/Matchs.js";
 import { attachWebSocketServer } from "./ws/server.js";
 import { securityArcjetMiddleware } from "./arcjet.js";
+import { commentaryRouter } from "./router/commentary.js";
 
 // ================= APP SETUP =================
 const app = express();
@@ -23,17 +24,24 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
+// FIX: Move Arcjet BEFORE routes so ALL routes are protected,
+// including GET "/". Previously it was placed after the root route.
+app.use(securityArcjetMiddleware());
+
 // ================= ROUTES =================
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-
-app.use(securityArcjetMiddleware());
 app.use("/matches", matchesRouter);
 
+// FIX: Use :matchId to match the param name expected by commentaryRouter.
+// Previously used :id which caused a param name mismatch.
+app.use("/matches/:matchId/commentary", commentaryRouter);
+
 // ================= WEBSOCKET SETUP =================
-const { broadcastMatchCreated, broadcastMatchUpdated } = attachWebSocketServer(server);
+const { broadcastMatchCreated, broadcastMatchUpdated } =
+  attachWebSocketServer(server);
 
 app.locals.broadcastMatchCreated = broadcastMatchCreated;
 app.locals.broadcastMatchUpdated = broadcastMatchUpdated;

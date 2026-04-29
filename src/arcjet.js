@@ -16,6 +16,7 @@ function getClients() {
 
   _httpArcjet = arcjet({
     key,
+    
     rules: [
       shield({ mode }),
       detectBot({ mode, allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"] }),
