@@ -1,4 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
+import { getWsArcjet } from "../arcjet.js";
 
 function sendJson(socket, payload) {
   try {
@@ -43,7 +44,23 @@ export function attachWebSocketServer(server) {
     });
   }, 30000);
 
-  wss.on("connection", (socket) => {
+  wss.on("connection",async (socket,req) => {
+    if (wsArcjet){
+      try{
+        const decision = await wsArcjet.protect(req);
+        if (decision.isDenied){
+          const code = decision.reason.isRateLimit() ? 1013 : 1008; // 1013: Try Again Later, 1008: Policy Violation
+          const close= decision.reason.isRateLimit() ? "Rate limit exceeded" : "Forbidden";
+          console.log(`Connection denied: ${close}`);
+          socket.close(code, close);
+          return;
+        }
+
+      }catch(error){
+        console.error("WebSocket Arcjet error:", error);
+        socket.close(1011, "Internal Server Error");
+      }
+    }
     socket.isAlive = true;
 
     socket.on("pong", () => {
