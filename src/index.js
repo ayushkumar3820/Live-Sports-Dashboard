@@ -2,10 +2,12 @@
 import express from "express";
 import cors from "cors";
 import http from "http";
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config();
 
 import { matchesRouter } from "./router/Matchs.js";
 import { attachWebSocketServer } from "./ws/server.js";
+import { securityArcjetMiddleware } from "./arcjet.js";
 
 // ================= APP SETUP =================
 const app = express();
@@ -26,6 +28,8 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+
+app.use(securityArcjetMiddleware());
 app.use("/matches", matchesRouter);
 
 // ================= WEBSOCKET SETUP =================
